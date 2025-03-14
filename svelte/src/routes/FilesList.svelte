@@ -5,11 +5,16 @@
   import type { FOLDER_TYPES } from './utils';
   import MediaShow from './MediaShow.svelte';
   import type Toast from './Toast.svelte';
+  import JSZip from 'jszip';
 
   export let comfyUrl: string;
   export let folderType: FOLDER_TYPES;
   export let toast: Toast;
   export let folderPath: string;
+
+  let selectedFiles: string[] = [];
+  let isZipping = false;
+
   $: if (folderPath != undefined) {
     refresh();
   }
@@ -116,8 +121,6 @@
       .join('/');
   }
 
-  let selectedFiles: string[] = [];
-
   async function downloadSelected() {
     const filesToDownload = files.filter(
       (f) => f.type === 'file' && selectedFiles.includes(f.name),
@@ -128,14 +131,41 @@
       return;
     }
 
-    for (const file of filesToDownload) {
-      const fileUrl = `${comfyUrl}/browser/s/${folderType}/${file.name}`;
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
+    isZipping = true; // 开始压缩
+    const zip = new JSZip();
+
+    // for (const file of filesToDownload) {
+    //   const fileUrl = `${comfyUrl}/browser/s/${folderType}/${file.name}`;
+    //   const response = await fetch(fileUrl);
+    //   const blob = await response.blob();
+    //   const link = document.createElement('a');
+    //   link.href = URL.createObjectURL(blob);
+    //   link.download = file.name;
+    //   link.click();
+    // }
+    try {
+      // 并行获取所有文件
+      const promises = filesToDownload.map(async (file) => {
+        const response = await fetch(
+          `${comfyUrl}/browser/s/${folderType}/${file.name}`,
+        );
+        const blob = await response.blob();
+        zip.file(file.name, blob);
+      });
+
+      await Promise.all(promises);
+
+      // 生成压缩包
+      const content = await zip.generateAsync({ type: 'blob' });
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = file.name;
+      link.href = URL.createObjectURL(content);
+      link.download = `download_${Date.now()}.zip`;
       link.click();
+    } catch (error) {
+      toast.show(false, '下载失败');
+    } finally {
+      isZipping = false;
+      selectedFiles = []; // 清空选中
     }
   }
 </script>
@@ -161,14 +191,16 @@
       class="btn btn-sm btn-ghost"
       on:click={() => {
         const visibleFiles = files
-          .filter(f => searchRegex.test(f.name.toLowerCase()))
+          .filter((f) => searchRegex.test(f.name.toLowerCase()))
           .slice(0, showCursor)
-          .filter(f => f.type === 'file');
-        
-        if (visibleFiles.every(f => selectedFiles.includes(f.name))) {
+          .filter((f) => f.type === 'file');
+
+        if (visibleFiles.every((f) => selectedFiles.includes(f.name))) {
           selectedFiles = [];
         } else {
-          selectedFiles = [...new Set([...selectedFiles, ...visibleFiles.map(f => f.name)])];
+          selectedFiles = [
+            ...new Set([...selectedFiles, ...visibleFiles.map((f) => f.name)]),
+          ];
         }
       }}
     >
