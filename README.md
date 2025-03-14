@@ -158,3 +158,5 @@ To see [ChangeLog](CHANGELOG.md).
 ## Credits
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+
+http://localhost:5173/?comfyUrl=/api

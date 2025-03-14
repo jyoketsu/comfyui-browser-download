@@ -35,6 +35,7 @@
   },
   "type": "module",
   "dependencies": {
+    "comfyui-browser": "file:",
     "dayjs": "^1.11.10",
     "svelte-i18n": "^4.0.0"
   }
