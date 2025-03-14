@@ -135,7 +135,7 @@
     const zip = new JSZip();
 
     // for (const file of filesToDownload) {
-    //   const fileUrl = `${comfyUrl}/browser/s/${folderType}/${file.name}`;
+    //   const fileUrl = file.url;
     //   const response = await fetch(fileUrl);
     //   const blob = await response.blob();
     //   const link = document.createElement('a');
@@ -146,9 +146,7 @@
     try {
       // 并行获取所有文件
       const promises = filesToDownload.map(async (file) => {
-        const response = await fetch(
-          `${comfyUrl}/browser/s/${folderType}/${file.name}`,
-        );
+        const response = await fetch(file.url);
         const blob = await response.blob();
         zip.file(file.name, blob);
       });
