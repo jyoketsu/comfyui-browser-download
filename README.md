@@ -142,6 +142,13 @@ cd custom_nodes && git clone https://github.com/tzwm/comfyui-browser.git
 
   - Please try to test on Windows, because I only have Linux/macOS
 
+## 本地开发
+- `cd /svelte`
+- `pnpm install`
+- `pnpm dev`
+- 去waas创建实例，选择comfyUI镜像
+- 调试地址为`http://localhost:5173/?comfyUrl=https://997088920728633345-comfyui.east1.waas.aigate.cc`,comfyUrl就是地址栏中的comfyUI地址
+
 
 ## TODO
 
@@ -158,5 +165,3 @@ To see [ChangeLog](CHANGELOG.md).
 ## Credits
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
-
-http://localhost:5173/?comfyUrl=/api

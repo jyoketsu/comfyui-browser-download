@@ -6,6 +6,7 @@
   import MediaShow from './MediaShow.svelte';
   import type Toast from './Toast.svelte';
   import JSZip from 'jszip';
+  import PreviewModal from './PreviewModal.svelte';
 
   export let comfyUrl: string;
   export let folderType: FOLDER_TYPES;
@@ -14,6 +15,7 @@
 
   let selectedFiles: string[] = [];
   let isZipping = false;
+  let selectedFile: any;
 
   $: if (folderPath != undefined) {
     refresh();
@@ -109,6 +111,46 @@
     folderPath = dir.path;
   }
 
+  function onClickFile(file: any) {
+    console.log('---onClickFile---', file);
+    if (file.fileType === 'image') {
+      selectedFile = file;
+      (
+        document.getElementById('image_preview_modal') as HTMLDialogElement
+      )?.showModal();
+    } else {
+      window.open(file.url);
+    }
+  }
+
+  function onClickPrev() {
+    const images = files.filter((f) => f.fileType === 'image');
+    const index = images.findIndex((f) => f.name === selectedFile.name);
+    if (index === -1) {
+      return toast.show(false, '', '当前图片不存在');
+    }
+
+    if (index === 0) {
+      return toast.show(false, '', '已经是第一张图片');
+    }
+
+    selectedFile = images[index - 1];
+  }
+
+  function onClickNext() {
+    const images = files.filter((f) => f.fileType === 'image');
+    const index = images.findIndex((f) => f.name === selectedFile.name);
+    if (index === -1) {
+      return toast.show(false, '', '当前图片不存在');
+    }
+
+    if (index === images.length - 1) {
+      return toast.show(false, '', '已经是最后一张图片');
+    }
+
+    selectedFile = images[index + 1];
+  }
+
   async function onClickPath(index: number) {
     if (index === -1) {
       folderPath = '';
@@ -160,7 +202,7 @@
       link.download = `download_${Date.now()}.zip`;
       link.click();
     } catch (error) {
-      toast.show(false, '下载失败');
+      toast.show(false, '', '下载失败');
     } finally {
       isZipping = false;
       selectedFiles = []; // 清空选中
@@ -233,7 +275,12 @@
           />
         {/if}
         <div class="flex items-center">
-          <MediaShow {file} styleClass="w-full h-16 sm:h-36" {onClickDir} />
+          <MediaShow
+            {file}
+            styleClass="w-full h-16 sm:h-36"
+            {onClickDir}
+            {onClickFile}
+          />
         </div>
 
         <p class="font-bold max-h-12 leading-6 overflow-auto mt-1">
@@ -322,3 +369,5 @@
     </svg>
   </button>
 {/if}
+
+<PreviewModal {selectedFile} {onClickNext} {onClickPrev} />

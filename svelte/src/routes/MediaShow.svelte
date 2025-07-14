@@ -2,6 +2,7 @@
   export let file: any;
   export let styleClass: string;
   export let onClickDir: Function;
+  export let onClickFile: Function;
 </script>
 
 
@@ -16,10 +17,10 @@
       </svg>
     </button>
   {:else}
-    <a
-      href={file.url}
-      target="_blank"
+    <button
+      class="cursor-pointer"
       style="height: inherit; width: inherit;"
+      on:click={() => onClickFile(file)}
     >
       {#if file.fileType === 'json'}
         <div class="w-full h-full flex items-center justify-center">
@@ -53,6 +54,6 @@
           <track kind="captions" />
         </video>
       {/if}
-    </a>
+    </button>
   {/if}
 </div>
